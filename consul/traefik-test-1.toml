@@ -1,0 +1,35 @@
+logLevel = "DEBUG"
+
+defaultEntryPoints = ["http", "https"]
+
+[entryPoints]
+  [entryPoints.api]
+    address = ":8081"
+  [entryPoints.http]
+  address = ":80"
+  [entryPoints.https]
+  address = ":443"
+
+    [entryPoints.https.tls]
+      [[entryPoints.https.tls.certificates]]
+      certFile = "integration/fixtures/https/snitest.com.cert"
+      keyFile = "integration/fixtures/https/snitest.com.key"
+      [[entryPoints.https.tls.certificates]]
+      certFile = """-----BEGIN CERTIFICATE-----
+                      <cert file content>
+                      -----END CERTIFICATE-----"""
+      keyFile = """-----BEGIN PRIVATE KEY-----
+                      <key file content>
+                      -----END PRIVATE KEY-----"""
+    [entryPoints.other-https]
+    address = ":4443"
+      [entryPoints.other-https.tls]
+
+[consul]
+  endpoint = "consul:8500"
+  watch = true
+  prefix = "traefik"
+
+[api]
+  entrypoint = "api"
+

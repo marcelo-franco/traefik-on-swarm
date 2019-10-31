@@ -1,0 +1,61 @@
+version: "3.2"
+services:
+  traefik:
+    image: traefik
+    command:
+      - "--api"
+      - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
+      - "--entrypoints=Name:https Address::443 TLS"
+      - "--defaultentrypoints=http,https"
+      - "--acme"
+      - "--acme.storage=/etc/traefik/acme/acme.json"
+      - "--acme.entryPoint=https"
+      - "--acme.httpChallenge.entryPoint=http"
+      - "--acme.onHostRule=true"
+      - "--acme.email=marcelo.franco.br@gmail.com"
+      - "--docker"
+      - "--docker.swarmMode=true"
+      #- "--docker.domain=traefik.pos36.com"
+      - "--docker.watch"
+      - "--traefikLog.filePath=/etc/traefik/traefik.log"
+      - "--logLevel=DEBUG"
+      - "--accesslog"
+      - "--accessLog.filePath=/etc/traefik/access.log"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /root/acme.json:/etc/traefik/acme/acme.json
+    networks:
+      - traefik
+    ports:
+      - target: 80
+        published: 80
+        mode: host
+      - target: 443
+        published: 443
+        mode: host
+      - target: 8080
+        published: 8080
+        mode: host
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  whoami:
+    image: containous/whoami # A container that exposes an API to show its IP address
+    deploy:
+      labels:
+        - "traefik.frontend.rule=Host:traefik.pos36.com"
+        - "traefik.port=80"
+        - "traefik.docker.network=web"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    driver: overlay
