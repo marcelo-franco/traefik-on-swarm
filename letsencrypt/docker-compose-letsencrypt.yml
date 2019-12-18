@@ -1,7 +1,7 @@
 version: "3.2"
 services:
   traefik:
-    image: traefik
+    image: traefik:1.7
     command:
       - "--api"
       - "--entrypoints=Name:http Address::80 Redirect.EntryPoint:https"
